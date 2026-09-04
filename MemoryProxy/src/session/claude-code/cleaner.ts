@@ -37,9 +37,7 @@ export function getLastUserMessageText(messages: RawMessage[]): string {
   for (let i = messages.length - 1; i >= 0; i--) {
     if (messages[i].role === "tool") {
       const text = getMessageText(messages[i]);
-      if (text && (text.includes("AskUserQuestion") || text.includes("multi_question_result") || containsFormTitle(text))) {
-        return text;
-      }
+      if (text && isFormAnswer(text)) return text;
     }
   }
 
@@ -50,6 +48,23 @@ export function getLastUserMessageText(messages: RawMessage[]): string {
     }
   }
   return "";
+}
+
+function isFormAnswer(text: string): boolean {
+  if (
+    text.includes("AskUserQuestion") ||
+    text.includes("multi_question_result") ||
+    text.includes("User has answered your questions:") ||
+    containsFormTitle(text)
+  ) {
+    return true;
+  }
+  try {
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    return !!parsed && typeof parsed === "object" && !!parsed.answers;
+  } catch {
+    return false;
+  }
 }
 
 function getMessageText(msg: RawMessage): string {

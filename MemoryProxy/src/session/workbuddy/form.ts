@@ -220,7 +220,7 @@ export function buildFormResponse(data: FormData): Response {
 
 // ── OpenAI Non-streaming ───────────────────────────────────────────────────────
 
-function buildOpenAINonStreamingResponse(
+export function buildOpenAINonStreamingResponse(
   id: string,
   created: number,
   model: string,
@@ -254,7 +254,7 @@ function buildOpenAINonStreamingResponse(
 
 // ── OpenAI Streaming ───────────────────────────────────────────────────────────
 
-function buildOpenAIStreamingResponse(
+export function buildOpenAIStreamingResponse(
   id: string,
   created: number,
   model: string,

@@ -101,6 +101,7 @@ export type SessionInitResult = CBSessionInitResult;
  */
 import type { MetadataClient } from "../meta/client.js";
 import type { PresetIdentity } from "./preset.js";
+import { adaptProtocolFormResponse } from "./claude-code/protocol-form.js";
 
 export async function handleSessionInit(
   sessionKey: string,
@@ -116,7 +117,7 @@ export async function handleSessionInit(
   presetIdentity?: PresetIdentity,
 ): Promise<SessionInitResult> {
   if (agentSource === "claude-code") {
-    return ccHandle(
+    const result = await ccHandle(
       sessionKey, userId, messages, config, store,
       // 直接透传整个 reqCtx，避免手抠字段时把新加字段（如 codex 的
       // codexAnswerInput）漏掉。protocol MUST be forwarded — without it,
@@ -133,6 +134,14 @@ export async function handleSessionInit(
       spaceId,
       presetIdentity,
     );
+    if (result.intercepted && result.response) {
+      result.response = await adaptProtocolFormResponse(
+        result.response,
+        reqCtx.protocol,
+        reqCtx.stream,
+      );
+    }
+    return result;
   }
   // 同上：整个 reqCtx 透传给 CB 状态机。codexHandler 会把 body.input[] 塞在
   // reqCtx.codexAnswerInput 里，供 CB 状态机内部的 codex-only pre-checks 段
